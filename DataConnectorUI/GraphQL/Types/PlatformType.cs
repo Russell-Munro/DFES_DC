@@ -14,7 +14,17 @@ namespace DataConnectorUI.GraphQL.Types
     {
         public PlatformType()
         {
-            Field(x => x.PlatformID, type: typeof(StringGraphType));
+            Field<IdGraphType>(
+                "platformID",
+                resolve: context =>
+                {
+                    // Return null if the source or its ID is missing.
+                    var id = context.Source?.PlatformID;
+
+                    // Guid.Empty indicates the identifier has not been assigned.
+                    return id.HasValue && id.Value != Guid.Empty ? id : null;
+                });
+            //Field(x => x.PlatformID, type: typeof(StringGraphType));
             Field(x => x.Name, type: typeof(StringGraphType));
 
         }
