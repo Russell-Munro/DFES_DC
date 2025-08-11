@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>UDC.SharePointOnlineIntegrator</AssemblyName>
+    <RootNamespace>UDC.SharePointOnlineIntegrator</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UDC.Common\UDC.Common.csproj" />
+    <ProjectReference Include="..\UDC.SharePointOnline.GraphService\UDC.SharePointOnline.GraphService.csproj" />
+  </ItemGroup>
+</Project>
