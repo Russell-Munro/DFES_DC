@@ -1,40 +1,31 @@
-﻿using System;
-using System.Diagnostics;
+using System;
 using System.IO;
 using Microsoft.Extensions.Configuration;
 
 namespace UDC.Common
 {
-
-
     public class AppSettings
     {
-        public static String GetValue(String key)
+        private static readonly Lazy<IConfigurationRoot> _configuration = new Lazy<IConfigurationRoot>(() =>
         {
-            String retVal = "";
-            String env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             if (string.IsNullOrWhiteSpace(env))
                 env = "LOCAL";
 
             var pathToContentRoot = Directory.GetCurrentDirectory();
 
-            //TODO: dont load  many times, cache this
-            IConfigurationBuilder objCfgBuilder = new ConfigurationBuilder()
+            return new ConfigurationBuilder()
                 .SetBasePath(pathToContentRoot)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env}.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables();
-                
-            IConfigurationRoot objCfg = objCfgBuilder.Build(); 
+                .AddEnvironmentVariables()
+                .Build();
+        });
 
-            retVal = objCfg.GetValue<String>(key);
-
-            objCfg = null;
-            objCfgBuilder = null;
-            env = null;
-
-            return retVal;
+        public static string GetValue(string key)
+        {
+            return _configuration.Value.GetValue<string>(key);
         }
     }
 }
+
