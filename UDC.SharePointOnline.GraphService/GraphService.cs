@@ -1,35 +1,20 @@
-﻿using UDC.Common;
+using UDC.Common;
 using Microsoft.Graph;
 using Microsoft.Graph.Auth;
 using Microsoft.Identity.Client;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Equ.SharePoint.GraphService
 {
-    // Your interface is already good, assuming it's correctly defined elsewhere:
-    // public interface IGraphService
-    // {
-    //     Task<bool> ExistsAsync(string path);
-    //     Task DeleteAsync(string path);
-    //     Task<Stream> DownloadAsync(string path);
-    //     Task UploadAsync(string path, Stream stream);
-    // }
-
     public class GraphService : IGraphService
     {
-        public GraphServiceClient client;
-        private string driveId;
-
-        // RECOMMENDATION: Make the constructor async, and call InitializeAsync from it
-        // Or, have a separate async initialization method that must be called after construction.
-        // For simplicity and to avoid changing the constructor signature immediately,
-        // we'll move the async initialization to a separate method, and use AsyncHelper in constructor
-        // as a temporary measure IF the constructor MUST remain synchronous.
-        // **The ideal scenario is an async factory method for GraphService or an async Init method.**
+        private readonly GraphServiceClient client;
+        private readonly string siteId;
+        private readonly string driveId;
 
         public GraphService(
             string tenantId,
@@ -39,7 +24,7 @@ namespace Equ.SharePoint.GraphService
             string sitePath,
             string driveName)
         {
-            IConfidentialClientApplication confidentialClientApplication = ConfidentialClientApplicationBuilder
+            var confidentialClientApplication = ConfidentialClientApplicationBuilder
                 .Create(clientId)
                 .WithTenantId(tenantId)
                 .WithClientSecret(clientSecret)
@@ -48,30 +33,91 @@ namespace Equ.SharePoint.GraphService
             var authProvider = new ClientCredentialProvider(confidentialClientApplication);
             client = new GraphServiceClient(authProvider);
 
-            // RESOLUTION: Use AsyncHelper to avoid deadlocks in the constructor.
-            // This still blocks the calling thread of the constructor, but it prevents the specific deadlock
-            // due to SynchronizationContext.
             AsyncHelper.RunSync(async () =>
             {
-                // Retrieve Site
                 var site = await client.Sites.GetByPath(sitePath, siteDomain).Request().GetAsync().ConfigureAwait(false);
                 if (site == null)
                 {
                     throw new Exception($"SharePoint site '{sitePath}' at '{siteDomain}' not found.");
                 }
 
-                // Get Drives for the site
+                siteId = site.Id;
+
                 var drives = await client.Sites[site.Id]
                                          .Drives
                                          .Request()
                                          .GetAsync()
                                          .ConfigureAwait(false);
 
-                // Find the specific drive by name
                 var drive = drives.FirstOrDefault(d => d.Name == driveName);
                 driveId = drive?.Id ?? throw new Exception($"Drive '{driveName}' not found in site '{sitePath}'.");
             });
         }
 
+        private static Dictionary<string, object> SimplifyDriveItem(DriveItem item) => new()
+        {
+            ["id"] = item.Id,
+            ["name"] = item.Name,
+            ["size"] = item.Size,
+            ["isFolder"] = item.Folder != null,
+            ["webUrl"] = item.WebUrl,
+            ["createdDateTime"] = item.CreatedDateTime,
+            ["lastModifiedDateTime"] = item.LastModifiedDateTime
+        };
+
+        private static Exception WrapServiceException(ServiceException ex, string resource) => ex.StatusCode switch
+        {
+            HttpStatusCode.Unauthorized => new UnauthorizedAccessException("Authentication to Microsoft Graph failed.", ex),
+            HttpStatusCode.NotFound => new KeyNotFoundException($"{resource} not found.", ex),
+            _ => new Exception($"Microsoft Graph request for {resource} failed.", ex)
+        };
+
+        public async Task<Dictionary<string, object>> GetItemAsync(string itemId)
+        {
+            try
+            {
+                var item = await client.Sites[siteId].Drives[driveId].Items[itemId]
+                    .Request()
+                    .GetAsync()
+                    .ConfigureAwait(false);
+
+                return SimplifyDriveItem(item);
+            }
+            catch (ServiceException ex)
+            {
+                throw WrapServiceException(ex, $"item '{itemId}'");
+            }
+        }
+
+        public async Task<IList<Dictionary<string, object>>> GetChildrenAsync(string itemId = null)
+        {
+            try
+            {
+                IDriveItemChildrenCollectionPage items;
+
+                if (string.IsNullOrEmpty(itemId))
+                {
+                    items = await client.Sites[siteId].Drives[driveId].Root.Children
+                        .Request()
+                        .GetAsync()
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    items = await client.Sites[siteId].Drives[driveId].Items[itemId].Children
+                        .Request()
+                        .GetAsync()
+                        .ConfigureAwait(false);
+                }
+
+                return items.Select(SimplifyDriveItem).ToList();
+            }
+            catch (ServiceException ex)
+            {
+                var resource = string.IsNullOrEmpty(itemId) ? "drive root" : $"item '{itemId}'";
+                throw WrapServiceException(ex, resource);
+            }
+        }
     }
 }
+
