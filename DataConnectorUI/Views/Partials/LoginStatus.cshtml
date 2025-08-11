@@ -1,0 +1,16 @@
+﻿@model UDC.Common.Database.Data.Models.Database.UIUser
+
+@if (Model != null)
+
+{
+
+    <script>
+        window.userInfo = @Json.Serialize(Model);
+    </script>
+    @*<div><strong>Username:</strong> @(Model.Username)</div>
+    <div><strong>Email:</strong> @(Model.Email)</div>
+    <div><strong>IsConnectionAdmin:</strong> @(Model.IsConnectionAdmin)</div>
+    <div><strong>IsSyncManager:</strong> @(Model.IsSyncManager)</div>
+    <div><strong>Timezone Offset:</strong> @(Model.TZOffsetMins)</div>
+    <div>Back to <a href="@(Model.ReferringApplicationURL)">@(Model.ReferringApplication)</a></div>*@
+}

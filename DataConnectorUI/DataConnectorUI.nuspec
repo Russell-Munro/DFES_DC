@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata minClientVersion="3.3">
+    <id>UniversalDataConnector.DataConnectorUI.[env]</id>
+    <title>Universal Data Connector DataConnector UI</title>
+    <version>1.0.0</version>
+    <authors>Sean Molam, Nigel Taylor Matt Lawrence</authors>
+    <owners>Equilibrium Pty Ltd</owners>
+    <description>Universal Data Connector</description>
+    <tags>connector</tags>  
+  </metadata>
+  <files>	
+    <file src="bin\[env]\netcoreapp2.1\win81-x64\publish\**\*.*" target="" />
+    <!-- Remove duplicate handling: -->
+    <!-- Error NU5050: Attempted to pack multiple files into the same location(s). The following destinations were used multiple times: wwwroot\1.css, wwwroot\fonts\roboto-latin-400italic.woff etc -->
+	  <!--<file src=".\wwwroot\**\*.*" target="wwwroot" />-->
+  </files>
+</package>

@@ -1,0 +1,38 @@
+﻿@using UDC.Common
+@using UDC.Common.Database.Data.Models.Database;
+@inject DataConnectorUI.Services.AuthSessionService AuthSessionService
+
+@{
+    UIUser objCurrUser = AuthSessionService.GetCurrentUser();
+    string schedulingAgentWebSocket = AppSettings.GetValue("SchedulingAgentWebSocket");
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Universal Data Connector</title>
+
+  <link rel="stylesheet" href="~/1.css" />
+
+</head>
+<body style="background-color: #f5f5f5">
+
+
+    <div class="container body-content">
+        @await Html.PartialAsync("../Partials/LoginStatus", objCurrUser)
+        <script>
+            window.schedulingAgentWebSocket = "@schedulingAgentWebSocket";
+        </script>
+        @RenderBody()
+
+    </div>
+
+    @RenderSection("Scripts", required: false)
+    <environment>
+    <script src="~/vendors~connections.js"></script>
+    <script src="~/connections-bundle.js"></script>
+    </environment>    
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<meta charset="utf-8"/>
+<title>UniversalDataConnector Socket Test Client</title>
+<script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"></script>
+<script language="javascript" type="text/javascript">
+var wsUri = "ws://localhost:8080/";
+	var arrRules = [];
+	var websocket;
+	
+	function init()
+	{
+		configWebSocket();
+	}
+	function configWebSocket()
+	{
+		websocket = new WebSocket(wsUri);
+		websocket.onopen = function(evt) { onOpen(evt) };
+		websocket.onclose = function(evt) { onClose(evt) };
+		websocket.onmessage = function(evt) { onMessage(evt) };
+		websocket.onerror = function(evt) { onError(evt) };
+	}
+	function onOpen(evt)
+	{
+		jQuery("#connectionStatus").css("color","blue");
+		jQuery("#connectionStatus").html("Connected to server...");
+	}
+	function onClose(evt)
+	{
+		jQuery("#connectionStatus").css("color","red");
+		jQuery("#connectionStatus").html("Not connected to server...");
+	}
+	function onMessage(evt)
+	{
+		var obj = JSON.parse(evt.data);
+		if(obj.socketFrameType != 1)
+		{
+			renderRuleStatus(obj);
+		}
+		else
+		{
+			jQuery("#console").append("<div>" + obj.message + "</div>");
+		}
+	}
+	function onError(evt)
+	{
+		jQuery("#errorMsg").html("Error: " + evt.data);
+	}
+	function sendTextFrame(message)
+	{
+		if (websocket.readyState == WebSocket.OPEN)
+		{
+			websocket.send(message);
+		}
+	}
+	function renderRuleStatus(obj)
+	{
+		var id = obj.data.connectionRuleID;
+		var exists = false;
+		
+		for(var i = 0; i < arrRules.length; i++)
+		{
+			if(arrRules[i] == id)
+			{
+				exists = true;
+				break;
+			}
+		}
+		if(exists)
+		{
+			//Update
+			updateRulePanel(obj);
+		}
+		else
+		{
+			//Create
+			arrRules.push(id);
+			genRulePanel(id)
+		}
+	}
+	function genRulePanel(ruleId)
+	{
+		var html = "<div id=\"rule" + ruleId + "\">" + 
+			"<h3 class=\"title\"></h3>" + 
+			"<h4 class=\"state\"></h4>" + 
+			"<div class=\"currOp\"></div>" + 
+			"<div class=\"currMsg\"></div>" + 
+			"<div class=\"currProg\"></div>" + 
+			"<div class=\"errData\"></div>" + 
+			"<div class=\"syncStats\"></div>" + 
+			"</div>";
+		var objEl = jQuery(html);
+		jQuery("#SyncLog").append(objEl);
+	}
+	function updateRulePanel(obj)
+	{
+		var id = obj.data.connectionRuleID;
+		var color = 'blue';
+		var status = 'NoAction';
+		
+		switch(obj.data.LogType)
+		{
+			case 1: //trace
+				color = 'green';
+				break;
+			case 2: //warning
+				color = 'gold';
+				break;
+			case 3: //error
+				color = 'red';
+				break;
+		}
+		switch(obj.data.LogAction)
+		{
+			case 0:
+				status = 'NoAction';
+				break;
+			case 1:
+				status = 'Starting';
+				break;
+			case 2:
+				status = 'Running';
+				break;
+			case 3:
+				status = 'Stopped';
+				break;
+		}
+		
+		jQuery("#rule" + id).find("h3.title").html("Rule " + id);
+		jQuery("#rule" + id).find("h4.state").html(status + "...");
+		jQuery("#rule" + id).find("div.currOp").html(obj.data.SourceDesc);
+		jQuery("#rule" + id).find("div.currMsg").html(obj.data.Msg);
+		
+		jQuery("#rule" + id).find("div.currOp").css("color",color);
+		jQuery("#rule" + id).find("div.currMsg").css("color","dark" + color);
+		
+		jQuery("#rule" + id).find("div.errData").html("");
+		if(obj.data.LogType == 3)
+		{
+			var err = '<div style="color:' + color + ';">' + obj.data.Exception + '</div>' + 
+			'<div style="color:' + color + ';">' + obj.data.Data + '</div>'
+			jQuery("#rule" + id).find("div.errData").html(err);
+			jQuery("#lastErrorMsg").html(err);
+		}
+		else
+		{
+			jQuery("#lastErrorMsg").find("div").css('color','silver');
+		}
+		
+		jQuery("#rule" + id).find("div.currProg").html("");
+		try
+		{
+			if(obj.data.SourceDesc.indexOf("Saving") > -1)
+			{
+				jQuery("#rule" + id).find("div.currProg").html(obj.data.Data);
+			}
+		}
+		catch(err){}
+		
+		jQuery("#rule" + id).find("div.syncStats").html("");
+		jQuery("#rule" + id).find("div.syncStats").css("color", "gray");
+		if(obj.socketFrameType == 3)
+		{
+			var str = "<div>ExecutionStatus: " + obj.data.ExecutionStatus + "</div>" + 
+					"<div>SyncTimeElapsed: " + obj.data.SyncTimeElapsed + "</div>" + 
+					"<div>&nbsp;</div>" + 
+					"<div>TagsCreated: " + obj.data.TagsCreated + "</div>" + 
+					"<div>TagsDeleted: " + obj.data.TagsDeleted + "</div>" + 
+					"<div>TagsSkipped: " + obj.data.TagsSkipped + "</div>" + 
+					"<div>TagsUpdated: " + obj.data.TagsUpdated + "</div>" + 
+					"<div>&nbsp;</div>" + 
+					"<div>ContainersCreated: " + obj.data.ContainersCreated + "</div>" + 
+					"<div>ContainersDeleted: " + obj.data.ContainersDeleted + "</div>" + 
+					"<div>ContainersSkipped: " + obj.data.ContainersSkipped + "</div>" + 
+					"<div>ContainersUpdated: " + obj.data.ContainersUpdated + "</div>" + 
+					"<div>&nbsp;</div>" + 
+					"<div>ObjectsCreated: " + obj.data.ObjectsCreated + "</div>" + 
+					"<div>ObjectsDeleted: " + obj.data.ObjectsDeleted + "</div>" + 
+					"<div>ObjectsSkipped: " + obj.data.ObjectsSkipped + "</div>" + 
+					"<div>ObjectsUpdated: " + obj.data.ObjectsUpdated + "</div>" + 
+					"<div>&nbsp;</div>" + 
+					"<div>BinaryTransferedBytes: " + obj.data.BinaryTransferedBytes + "</div>" + 
+					"<div>&nbsp;</div>" + 
+					"<div>Total Errors: " + obj.data.Errors + "</div>";
+			jQuery("#rule" + id).find("div.syncStats").html(str);
+		}
+	}
+	function sendCommand()
+	{
+		var txt = document.getElementById("lstComand");
+		if (txt.value.length > 0)
+		{
+			switch(txt.value)
+			{
+				case "1":
+					sendTextFrame("{ cmd: \"UpdateSchedules\", args: null }");
+					break;
+				case "2":
+					sendTextFrame("{ cmd: \"ExecSync\", args: [2] }");
+					break;
+			}
+		}
+	}
+	function disconnectSocket()
+	{
+		if (websocket.readyState == WebSocket.OPEN)
+		{
+			websocket.close();
+		}
+		document.getElementById("cmdSubmitCommand").disabled = true;
+		document.getElementById("cmdDisconnect").disabled = true;
+		document.getElementById("lstComand").disabled = true;
+	}
+	window.addEventListener("load", init, false);
+</script>
+<h1>UniversalDataConnector Socket Test Client</h1>
+<p>
+<h2 id="connectionStatus" style="color:red;">Not connected to server...</h2>
+<div id="errorMsg" style="color:red;"></div>
+<div>
+	<select id="lstComand">
+		<option value="0">Select Command</option>
+		<option value="1">Update Schedules</option>
+		<option value="2">Execute Sync (Rule 2)</option>
+	</select>
+	<input type="button" id="cmdSubmitCommand" value="GO!" onclick="sendCommand()"/>
+	<input type="button" id="cmdDisconnect" value="Disconnect" onclick="disconnectSocket()"/>
+</div>
+
+<div id="SyncLog"></div>
+<div>&nbsp;</div>
+<div id="console" style="color:blue;"></div>
+<div id="lastErrorMsg" style="color:red;"></div>

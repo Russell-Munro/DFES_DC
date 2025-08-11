@@ -1,0 +1,57 @@
+--------------------------------------------------------------------------------
+	README file for the UniversalDataConnector SitefinityContextPlugin
+
+--------------------------------------------------------------------------------
+
+===========
+DESCRIPTION
+===========
+
+The SitefinityContextPlugin when installed within a Sitefinity Instance allows Integration with the UniversalDataConnector.
+
+The SitefinityContextPlugin targets specific versions of Sitefinity, so if the Instance is Upgraded, this Plugin will also need to be upgraded if support is provided....
+
+===========
+SET UP INSTRUCTIONS
+===========
+
+# After installing this package, be sure to Register the DataConnectorUIHandler HttpHandler in the Web.Config of the Sitefinity Instance:
+
+<httpHandlers>
+	<add verb="*" path="/Sitefinity/DataConnectorUI.axd" type="UDC.SitefinityContextPlugin.Handlers.DataConnectorUIHandler, UDC.SitefinityContextPlugin" />
+</httpHandlers>
+
+<handlers>
+	<add name="DataConnectorUI" verb="*" path="/Sitefinity/DataConnectorUI.axd" type="UDC.SitefinityContextPlugin.Handlers.DataConnectorUIHandler, UDC.SitefinityContextPlugin" />
+</handlers>
+
+# Sitefinity should automatically pick up the exposed Web API provided by this Context Plugin. You can Test it by Logging into the Sitefinity Back End and then navigating to:
+
+https://[fqdn]/udc-api/sfcontext/GetTaxonomies
+
+# On the first Execution of the Sitefinity Instance after this package has been installed, two new Roles will be Created which will be used in the UniversalDataConnector Admin Application UI. These roles are called: "DataConnector_Administrator", and "DataConnector_SyncManager" respectively. Add your desired Users to these roles to control level of access to the Data Connector.
+# Configuration Settings will also be available to configure the URL of the Self Contained Data Connector UI Application, as well as the Privilaged API User Account that will be leveraged for SF API Functions from the Data Connector.
+
+Sitefinity Admin -> Administration -> Settings -> Advanced -> DataConnector
+
+# For Large File Transfers to Sitefinity, add the following lines to Web.Config:
+
+<location path="udc-api/sfcontext">
+	<system.web>
+	  <httpRuntime maxRequestLength="524288000" executionTimeout="99999999" />
+	</system.web>
+	<system.webServer>
+	  <security>
+		<requestFiltering>
+		  <requestLimits maxAllowedContentLength="524288000" />
+		</requestFiltering>
+	  </security>
+	</system.webServer>
+</location>
+
+# If the target system isn't targeting .Net 4.7.2 or higher you will need to add to following binding redirect to the web.config
+
+<dependentAssembly>
+  <assemblyIdentity name="System.Net.Http" publicKeyToken="B03F5F7F11D50A3A" culture="neutral"/>
+  <bindingRedirect oldVersion="0.0.0.0-4.2.0.0" newVersion="4.2.0.0"/>
+</dependentAssembly>

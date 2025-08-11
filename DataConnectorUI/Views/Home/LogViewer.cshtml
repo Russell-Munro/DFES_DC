@@ -1,0 +1,143 @@
+﻿@{
+    ViewData["Title"] = "Log Viewer";
+}
+
+<script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"></script>
+
+<style>
+
+    body{
+            background: black !important;
+    padding:20px;
+
+    }
+#synclog {
+
+}
+
+    .log{
+        display:block;
+        font-family: serif;
+    }
+    .error{
+        color:red;
+    }
+    .warn{
+        color:orange;
+    }
+    .trace{
+        color:white;
+    }
+    .success{
+                color:greenyellow;
+
+    }
+
+        .summary{
+                color:green;
+
+    }
+</style>
+
+<script language="javascript" type="text/javascript">
+
+	var websocket;
+var wsUri = "ws://localhost:8080/";
+	var arrRules = [];
+
+	
+	function init()
+	{
+		configWebSocket();
+	}
+	function configWebSocket()
+	{
+		websocket = new WebSocket(wsUri);
+		websocket.onopen = function(evt) { onOpen(evt) };
+		websocket.onclose = function(evt) { onClose(evt) };
+		websocket.onmessage = function(evt) { onMessage(evt) };
+		websocket.onerror = function(evt) { onError(evt) };
+	}
+	function onOpen(evt)
+	{
+		jQuery("#connectionStatus").css("color","blue");
+		jQuery("#connectionStatus").html("Connected to server...");
+        $("#synclog").append("<span class=\"log success\">Connected to server...</span>");
+	}
+	function onClose(evt)
+	{
+		jQuery("#connectionStatus").css("color","red");
+		$("#synclog").append("<span class=\"log warn\">Disconnected from server...</span>");
+	}
+
+    
+	function onMessage(evt)
+	{
+		var obj = JSON.parse(evt.data);
+       
+        if(obj.socketFrameType!=3){
+
+    
+
+        switch(obj.data.LogType){
+           case 1:
+               $("#synclog").append("<span class=\"log trace\">" + obj.data.SourceDesc + " - " + obj.data.Msg + "</span>");
+                break;
+            case 2:
+                $("#synclog").append("<span class=\"log warn\">" + obj.data.SourceDesc + " - " + obj.data.Msg + "</span>");
+                break;
+            case 3:
+                $("#synclog").append("<span class=\"log error\">" + obj.data.SourceDesc + " - " + obj.data.Msg + "</span>");
+                $("#synclog").append("<span class=\"log error\"><pre>" + obj.data.Exception + "</pre></span>");
+                
+                break;
+            default:
+                $("#synclog").append("<span class=\"log trace\">" + obj.data.SourceDesc + " - " + obj.data.Msg + "</span>");
+                break;
+        }
+            }else{
+                $("#synclog").append("<span class='log summary'>\n\n\n\nSync complete</span>");
+                $("#synclog").append("<span class='log summary'>SyncTimeElapsed: " + obj.data.SyncTimeElapsed + "</span>");
+                $("#synclog").append("<span class='log summary'>ContainersCreated: " + obj.data.ContainersCreated + "</span>");
+                $("#synclog").append("<span class='log summary'>ContainersDeleted: " + obj.data.ContainersDeleted + "</span>");
+                $("#synclog").append("<span class='log summary'>ContainersSkipped: " + obj.data.ContainersSkipped + "</span>");
+                $("#synclog").append("<span class='log summary'>ContainersUpdated: " + obj.data.ContainersUpdated + "</span>");
+                $("#synclog").append("<span class='log summary'>Errors: " + obj.data.Errorsd + "</span>");
+                $("#synclog").append("<span class='log summary'>ExecutionStatus: " + obj.data.ExecutionStatus + "</span>");
+                $("#synclog").append("<span class='log summary'>ObjectsCreated: " + obj.data.ObjectsCreated + "</span>");
+                $("#synclog").append("<span class='log summary'>ObjectsDeleted: " + obj.data.ObjectsDeleted + "</span>");
+                $("#synclog").append("<span class='log summary'>ObjectsSkipped: " + obj.data.ObjectsSkipped + "</span>");
+                $("#synclog").append("<span class='log summary'>ObjectsUpdated: " + obj.data.ObjectsUpdated + "</span>");
+                $("#synclog").append("<span class='log summary'>SyncLog: " + obj.data.SyncLog + "</span>");
+                $("#synclog").append("<span class='log summary'>TagsCreated: " + obj.data.TagsCreated + "</span>");
+                $("#synclog").append("<span class='log summary'>TagsDeleted: " + obj.data.TagsDeleted + "</span>");
+                $("#synclog").append("<span class='log summary'>TagsSkipped: " + obj.data.TagsSkipped + "</span>");
+                $("#synclog").append("<span class='log summary'>TagsUpdated: " + obj.data.TagsUpdated + "</span>");
+                $("#synclog").append("<span class='log summary'>Warnings: " + obj.data.Warnings + "</span>");
+            }
+
+        window.scrollTo(0,document.body.scrollHeight);
+
+		//$("#SyncLog").append("<span>" + obj.data.SourceDesc + "</span>");
+	}
+
+
+
+	function onError(evt)
+	{
+		jQuery("#errorMsg").html("Error: " + evt.data);
+
+	}
+
+
+    
+	window.addEventListener("load", init, false);
+</script>
+
+
+
+
+
+
+<div id="synclog"><span class="log warn">Connecting to server...</span></div>
+<div id="summary"></div>

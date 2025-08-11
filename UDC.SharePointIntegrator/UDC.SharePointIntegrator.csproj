@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>UDC.SharePointIntegrator</AssemblyName>
+    <RootNamespace>UDC.SharePointIntegrator</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+    <Folder Include="PostSyncTasks\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Edm" Version="5.8.4" />
+    <PackageReference Include="Microsoft.Data.OData" Version="5.8.4" />
+    <PackageReference Include="Microsoft.Data.Services.Client" Version="5.8.4" />
+    <PackageReference Include="Microsoft.OData.Client" Version="7.6.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.6.0" />
+    <PackageReference Include="System.Spatial" Version="5.8.4" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UDC.Common\UDC.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.SharePoint.Client.Portable">
+      <HintPath>..\Dependancies\Microsoft.SharePointOnline.CSOM.16.1.19223.12000\Microsoft.SharePoint.Client.Portable.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Microsoft.SharePoint.Client.Runtime.Portable">
+      <HintPath>..\Dependancies\Microsoft.SharePointOnline.CSOM.16.1.19223.12000\Microsoft.SharePoint.Client.Runtime.Portable.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Microsoft.SharePoint.Client.Runtime.Windows">
+      <HintPath>..\Dependancies\Microsoft.SharePointOnline.CSOM.16.1.19223.12000\Microsoft.SharePoint.Client.Runtime.Windows.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Microsoft.SharePoint.Client.Runtime.WindowsStore">
+      <HintPath>..\Dependancies\Microsoft.SharePointOnline.CSOM.16.1.19223.12000\Microsoft.SharePoint.Client.Runtime.WindowsStore.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Microsoft.SharePoint.Client.Taxonomy.Portable">
+      <HintPath>..\Dependancies\Microsoft.SharePointOnline.CSOM.16.1.19223.12000\Microsoft.SharePoint.Client.Taxonomy.Portable.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services" />
+  </ItemGroup>
+
+</Project>

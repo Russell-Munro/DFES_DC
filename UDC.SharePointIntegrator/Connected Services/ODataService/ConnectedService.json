@@ -1,0 +1,42 @@
+﻿{
+  "ProviderId": "Unchase.OData.ConnectedService",
+  "Version": "1.3.2.0",
+  "GettingStartedDocument": {
+    "Uri": "https://msdn.microsoft.com/en-us/library/cc668772(v=vs.110).aspx"
+  },
+  "ExtendedData": {
+    "OperationImportsGenerator": 0,
+    "IncludeExtensionsT4File": true,
+    "GenerateOperationImports": false,
+    "ServiceName": "ODataService",
+    "AcceptAllUntrustedCertificates": true,
+    "Endpoint": "https://sharedadmin.dfes.wa.gov.au/_api/$metadata",
+    "EdmxVersion": {
+      "Major": 1,
+      "Minor": 0,
+      "Build": 0,
+      "Revision": 0,
+      "MajorRevision": 0,
+      "MinorRevision": 0
+    },
+    "GeneratedFileNamePrefix": "Reference",
+    "UseNameSpacePrefix": false,
+    "NamespacePrefix": null,
+    "UseDataServiceCollection": false,
+    "OpenGeneratedFilesOnComplete": true,
+    "LanguageOption": 0,
+    "FunctionImports": null,
+    "OperationImports": null,
+    "ExcludedOperationImportsNames": "",
+    "UseNetworkCredentials": true,
+    "NetworkCredentialsUserName": "svc_spconnector",
+    "NetworkCredentialsPassword": "5Ynu4NBOKesU890A98Uh",
+    "NetworkCredentialsDomain": "DFESPROD",
+    "WebProxyUri": null,
+    "UseWebProxy": false,
+    "UseWebProxyCredentials": false,
+    "WebProxyNetworkCredentialsUserName": null,
+    "WebProxyNetworkCredentialsPassword": null,
+    "WebProxyNetworkCredentialsDomain": null
+  }
+}

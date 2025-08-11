@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package >
+	<metadata>
+		<id>UDC.SitefinityContextPlugin</id>
+		<version>11.2.6934.6</version>
+		<authors>Nigel</authors>
+		<owners>Equilibrium</owners>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<description>This package allows Sitefinity Integration with the Universal Data Connector</description>
+		<releaseNotes>This version targets Integration with Sitefinity 11.2.6934.0</releaseNotes>
+		<copyright>Copyright 2019</copyright>
+		<dependencies>
+			<dependency id="Telerik.Sitefinity.Core" version="[11.2.6934]" />
+			<dependency id="Telerik.Sitefinity.Feather.Core" version="[11.2.6934]" />			
+		</dependencies>
+	</metadata>
+	<files>
+		<file src="UDC.SitefinityContextPlugin.ReadMe.txt" target="readme.txt" />
+		<file src="..\UDC.SitefinityContextPlugin\bin\Release\UDC.Common.dll" target="lib\net45\UDC.Common.dll" />
+		<file src="..\UDC.SitefinityContextPlugin\bin\Release\UDC.SitefinityContextPlugin.dll" target="lib\net45\UDC.SitefinityContextPlugin.dll" />
+	</files>
+</package>

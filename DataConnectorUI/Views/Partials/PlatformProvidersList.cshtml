@@ -1,0 +1,41 @@
+﻿@using UDC.Common.Interfaces;
+@using UDC.DataConnectorCore;
+
+@{
+    List<IPlatform> arrSupportedPlatforms = ProviderHelpers.GetPlatformInstances();
+}
+
+@if (arrSupportedPlatforms != null)
+{
+    <h2>Supported Platforms</h2>
+
+    foreach (IPlatform platform in arrSupportedPlatforms)
+    {
+        <div>@(platform.Name + " (" + platform.PlatformID + ")")</div>
+
+        List<IIntegrator> arrSrcIntegrators = ProviderHelpers.GetSrcIntegrators(platform);
+        List<IIntegrator> arrDestIntegrators = ProviderHelpers.GetDestIntegrators(platform);
+
+        if (arrSrcIntegrators != null)
+        {
+            <h3>Sources</h3>
+            <ul>
+                @foreach (IIntegrator src in arrSrcIntegrators)
+                {
+                    <li>@(src.Name + " (" + src.IntegratorID + ")")</li>
+                }
+            </ul>
+        }
+        if (arrDestIntegrators != null)
+        {
+            <h3>Destinations</h3>
+            <ul>
+                @foreach (IIntegrator dst in arrDestIntegrators)
+                {
+                    <li>@(dst.Name + " (" + dst.IntegratorID + ")")</li>
+                }
+            </ul>
+        }
+
+    }
+}
