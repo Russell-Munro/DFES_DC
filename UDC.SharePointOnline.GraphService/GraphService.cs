@@ -73,58 +73,5 @@ namespace Equ.SharePoint.GraphService
             });
         }
 
-        // This adheres to your IGraphService interface.
-        public async Task<bool> ExistsAsync(string path)
-        {
-            try
-            {
-                //check client and driveId are initialized
-                if (client == null || string.IsNullOrEmpty(driveId))
-                {
-                    throw new InvalidOperationException("GraphServiceClient or DriveId is not initialized.");
-                }
-
-                //this will fail with "nullReference Exception if the file is not present in the drive - so just return false;
-                var item = await client.Drives[driveId].Root.ItemWithPath(path).Request().GetAsync().ConfigureAwait(false);
-                return item != null; // If GetAsync returns an item, it exists.
-            }
-            catch (ServiceException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-            {
-                // This is the expected way to handle a "not found" scenario in Graph API.
-                return false;
-            }
-            catch (Exception ex)
-            {
-                //ItemWithPath -  will fail with "nullReference Exception if the file is not present in the drive - so just return false;
-                return false;
-            }
-        }
-
-        public async Task DeleteAsync(string path)
-        {
-            // Use ConfigureAwait(false)
-            await client.Drives[driveId].Root.ItemWithPath(path).Request().DeleteAsync().ConfigureAwait(false);
-        }
-
-        public async Task<Stream> DownloadAsync(string path)
-        {
-            // Use ConfigureAwait(false)
-            var stream = await client.Drives[driveId].Root.ItemWithPath(path).Content.Request().GetAsync().ConfigureAwait(false);
-            return stream;
-        }
-
-        public async Task<Stream> DownloadByIdAsync(string itemId) // Not in IGraphService, consider adding or removing.
-        {
-            // Use ConfigureAwait(false)
-            var stream = await client.Drives[driveId].Items[itemId].Content.Request().GetAsync().ConfigureAwait(false);
-            return stream;
-        }
-
-        public async Task UploadAsync(string path, Stream stream)
-        {
-            stream.Position = 0; // Ensure stream is at the beginning for upload.
-            // Use ConfigureAwait(false)
-            await client.Drives[driveId].Root.ItemWithPath(path).Content.Request().PutAsync<DriveItem>(stream).ConfigureAwait(false);
-        }
     }
 }
