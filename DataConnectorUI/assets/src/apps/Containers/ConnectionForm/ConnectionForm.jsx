@@ -347,7 +347,7 @@ const StringifyConfig = o => {
     var val = e.target.value;
     setSourcePlatformIntegrator(val);
     var newSource = Object.assign({}, sourcePlatformCfg, {
-      IntegratorID: val.integratorID
+      integratorID: val.integratorID
     });
     setSourcePlatformCfg(newSource);
   };
@@ -369,7 +369,7 @@ const StringifyConfig = o => {
 
     setDestinationPlatformIntegrator(val);
     var newSource = Object.assign({}, destinationPlatformCfg, {
-      IntegratorID: val.integratorID
+      integratorID: val.integratorID
     });
     setDestinationPlatformCfg(newSource);
   };
