@@ -10,6 +10,7 @@
     <ProjectReference Include="..\UDC.Common.Database\UDC.Common.Database.csproj" />
     <ProjectReference Include="..\UDC.Common\UDC.Common.csproj" />
     <ProjectReference Include="..\UDC.SharePointIntegrator\UDC.SharePointIntegrator.csproj" />
+    <ProjectReference Include="..\UDC.SharePointOnlineIntegrator\UDC.SharePointOnlineIntegrator.csproj" />
     <ProjectReference Include="..\UDC.SitefinityIntegrator\UDC.SitefinityIntegrator.csproj" />
   </ItemGroup>
 
