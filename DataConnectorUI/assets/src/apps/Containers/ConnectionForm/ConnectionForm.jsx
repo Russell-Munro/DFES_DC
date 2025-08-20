@@ -377,7 +377,7 @@ const StringifyConfig = o => {
   };
 
   const handleSourcePlatformChange = e => {
-    console.log(e.target.value);
+      console.log(e.target.value);
     var newObject = {};
     newObject["platformID"] = e.target.value.platformID;
     var newSource = Object.assign({}, sourcePlatformCfg, newObject);
@@ -584,7 +584,7 @@ const StringifyConfig = o => {
                 <Input
                   id="SourceServiceUsername"
                   name="serviceUsername"
-                  label="User Name"
+                  label="User Name (clientId)"
                   fullWidth
                   value={sourcePlatformCfg.serviceUsername || ""}
                   onChange={handleSrcConfigChange}
@@ -600,7 +600,7 @@ const StringifyConfig = o => {
                   className={classes.formField}
                   id="SourceServicePassword"
                   name="servicePassword"
-                  label="Password"
+                  label="Password (ClientSecret)"
                   fullWidth
                   value={sourcePlatformCfg.servicePassword || ""}
                   onChange={handleSrcConfigChange}
