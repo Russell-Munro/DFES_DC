@@ -59,6 +59,7 @@ const UPDATE_CONNECTION = gql`
         serviceUsername
         serviceDomain
         platformID
+        additionalConfigs
       }
       jsonDestinationPlatformCfg {
         endPointURL
@@ -67,6 +68,7 @@ const UPDATE_CONNECTION = gql`
         serviceUsername
         serviceDomain
         platformID
+        additionalConfigs
       }
     }
   }
@@ -87,6 +89,7 @@ const CONNECTIONS = gql`
         serviceUsername
         serviceDomain
         platformID
+        additionalConfigs
       }
       jsonDestinationPlatformCfg {
         endPointURL
@@ -95,6 +98,7 @@ const CONNECTIONS = gql`
         serviceUsername
         serviceDomain
         platformID
+        additionalConfigs
       }
     }
   }
