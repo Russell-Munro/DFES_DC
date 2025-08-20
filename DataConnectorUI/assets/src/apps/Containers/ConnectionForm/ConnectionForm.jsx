@@ -59,7 +59,7 @@ const UPDATE_CONNECTION = gql`
         serviceUsername
         serviceDomain
         platformID
-        additionalConfigs
+
       }
       jsonDestinationPlatformCfg {
         endPointURL
@@ -68,7 +68,7 @@ const UPDATE_CONNECTION = gql`
         serviceUsername
         serviceDomain
         platformID
-        additionalConfigs
+
       }
     }
   }
@@ -89,7 +89,7 @@ const CONNECTIONS = gql`
         serviceUsername
         serviceDomain
         platformID
-        additionalConfigs
+
       }
       jsonDestinationPlatformCfg {
         endPointURL
@@ -98,7 +98,7 @@ const CONNECTIONS = gql`
         serviceUsername
         serviceDomain
         platformID
-        additionalConfigs
+
       }
     }
   }
@@ -203,28 +203,41 @@ function ConnectionForm(props) {
   });
   const [showDestinationPassword, setShowDestinationPassword] = useState(false);
 
+    // helper (top-level in component)
+    const parseCfg = (s) => {
+        try { return JSON.parse(s || "{}"); } catch { return {}; }
+    };
+
   /**
    * QUERIES
    */
-  const currentConnectionQuery = useQuery(CONNECTIONS, {
-    variables: { id: props.match.params.connectionId },
-    onCompleted: data => {
-      // console.log(data);
-      let cc = _.find(
-        data.connections,
-        o => o.id == props.match.params.connectionId
-      );
+    const currentConnectionQuery = useQuery(CONNECTIONS, {
+        variables: { id: props.match.params.connectionId },
+        onCompleted: data => {
+            const cc = _.find(data.connections, o => o.id == props.match.params.connectionId);
+            if (!cc) return;
 
-      console.log(cc);
-      if (cc != null) {
-        setName(cc.name);
-        setId(cc.id);
-        setEnabled(cc.enabled);
-        setSourcePlatformCfg(cc.jsonSourcePlatformCfg);
-        setDestinationPlatformCfg(cc.jsonDestinationPlatformCfg);
-      }
-    }
-  });
+            setName(cc.name);
+            setId(cc.id);
+            setEnabled(cc.enabled);
+
+            const srcRaw = parseCfg(cc.sourcePlatformCfg);
+            const destRaw = parseCfg(cc.destinationPlatformCfg);
+
+            // seed from typed JSON, then patch in AdditionalConfigs from raw string
+            setSourcePlatformCfg(prev => ({
+                ...prev,
+                ...cc.jsonSourcePlatformCfg,
+                additionalConfigs: srcRaw.AdditionalConfigs || srcRaw.additionalConfigs || ""
+            }));
+
+            setDestinationPlatformCfg(prev => ({
+                ...prev,
+                ...cc.jsonDestinationPlatformCfg,
+                additionalConfigs: destRaw.AdditionalConfigs || destRaw.additionalConfigs || ""
+            }));
+        }
+    });
 
   console.log(currentConnectionQuery)
 
