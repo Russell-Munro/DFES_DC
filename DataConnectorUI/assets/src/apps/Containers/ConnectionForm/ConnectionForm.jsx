@@ -59,6 +59,7 @@ const UPDATE_CONNECTION = gql`
         serviceUsername
         serviceDomain
         platformID
+
       }
       jsonDestinationPlatformCfg {
         endPointURL
@@ -67,6 +68,7 @@ const UPDATE_CONNECTION = gql`
         serviceUsername
         serviceDomain
         platformID
+
       }
     }
   }
@@ -87,6 +89,7 @@ const CONNECTIONS = gql`
         serviceUsername
         serviceDomain
         platformID
+
       }
       jsonDestinationPlatformCfg {
         endPointURL
@@ -95,6 +98,7 @@ const CONNECTIONS = gql`
         serviceUsername
         serviceDomain
         platformID
+
       }
     }
   }
@@ -178,6 +182,7 @@ function ConnectionForm(props) {
     servicePassword: "",
     serviceUsername: "",
     serviceDomain: "",
+    additionalConfigs: "",
     __typename: "PlatformCfgType"
   });
   const [showSourcePassword, setShowSourcePassword] = useState(false);
@@ -193,32 +198,46 @@ function ConnectionForm(props) {
     servicePassword: "",
     serviceUsername: "",
     serviceDomain: "",
+    additionalConfigs: "",
     __typename: "PlatformCfgType"
   });
   const [showDestinationPassword, setShowDestinationPassword] = useState(false);
 
+    // helper (top-level in component)
+    const parseCfg = (s) => {
+        try { return JSON.parse(s || "{}"); } catch { return {}; }
+    };
+
   /**
    * QUERIES
    */
-  const currentConnectionQuery = useQuery(CONNECTIONS, {
-    variables: { id: props.match.params.connectionId },
-    onCompleted: data => {
-      // console.log(data);
-      let cc = _.find(
-        data.connections,
-        o => o.id == props.match.params.connectionId
-      );
+    const currentConnectionQuery = useQuery(CONNECTIONS, {
+        variables: { id: props.match.params.connectionId },
+        onCompleted: data => {
+            const cc = _.find(data.connections, o => o.id == props.match.params.connectionId);
+            if (!cc) return;
 
-      console.log(cc);
-      if (cc != null) {
-        setName(cc.name);
-        setId(cc.id);
-        setEnabled(cc.enabled);
-        setSourcePlatformCfg(cc.jsonSourcePlatformCfg);
-        setDestinationPlatformCfg(cc.jsonDestinationPlatformCfg);
-      }
-    }
-  });
+            setName(cc.name);
+            setId(cc.id);
+            setEnabled(cc.enabled);
+
+            const srcRaw = parseCfg(cc.sourcePlatformCfg);
+            const destRaw = parseCfg(cc.destinationPlatformCfg);
+
+            // seed from typed JSON, then patch in AdditionalConfigs from raw string
+            setSourcePlatformCfg(prev => ({
+                ...prev,
+                ...cc.jsonSourcePlatformCfg,
+                additionalConfigs: srcRaw.AdditionalConfigs || srcRaw.additionalConfigs || ""
+            }));
+
+            setDestinationPlatformCfg(prev => ({
+                ...prev,
+                ...cc.jsonDestinationPlatformCfg,
+                additionalConfigs: destRaw.AdditionalConfigs || destRaw.additionalConfigs || ""
+            }));
+        }
+    });
 
   console.log(currentConnectionQuery)
 
@@ -622,6 +641,21 @@ const StringifyConfig = o => {
                 />
               </FormControl>
 
+              <FormControl className={classes.formControl} fullWidth>
+                <InputLabel shrink htmlFor="SourceAdditionalConfigs">
+                  Additional Configs
+                </InputLabel>
+                <Input
+                  id="SourceAdditionalConfigs"
+                  name="additionalConfigs"
+                  label="Additional Configs"
+                  placeholder={'sitePath:"/sites/shared-resources";driveName:"EquDevCirculars";'}
+                  fullWidth
+                  value={sourcePlatformCfg.additionalConfigs || ""}
+                  onChange={handleSrcConfigChange}
+                />
+              </FormControl>
+
               {/* <pre>{JSON.stringify(sourcePlatformCfg, null, 1)}</pre> */}
             </Grid>
 
@@ -767,6 +801,20 @@ const StringifyConfig = o => {
                       </IconButton>
                     </InputAdornment>
                   }
+                />
+              </FormControl>
+              <FormControl className={classes.formControl} fullWidth>
+                <InputLabel shrink htmlFor="DestinationAdditionalConfigs">
+                  Additional Configs
+                </InputLabel>
+                <Input
+                  id="DestinationAdditionalConfigs"
+                  name="additionalConfigs"
+                  label="Additional Configs"
+                  placeholder={'sitePath:"/sites/shared-resources";driveName:"EquDevCirculars";'}
+                  fullWidth
+                  value={destinationPlatformCfg.additionalConfigs || ""}
+                  onChange={handleDestinationConfigChange}
                 />
               </FormControl>
               {/* {JSON.stringify(destinationPlatform, null, 1)} */}
