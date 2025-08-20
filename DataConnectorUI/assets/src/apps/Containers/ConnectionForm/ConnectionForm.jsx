@@ -178,6 +178,7 @@ function ConnectionForm(props) {
     servicePassword: "",
     serviceUsername: "",
     serviceDomain: "",
+    additionalConfigs: "",
     __typename: "PlatformCfgType"
   });
   const [showSourcePassword, setShowSourcePassword] = useState(false);
@@ -193,6 +194,7 @@ function ConnectionForm(props) {
     servicePassword: "",
     serviceUsername: "",
     serviceDomain: "",
+    additionalConfigs: "",
     __typename: "PlatformCfgType"
   });
   const [showDestinationPassword, setShowDestinationPassword] = useState(false);
@@ -622,6 +624,21 @@ const StringifyConfig = o => {
                 />
               </FormControl>
 
+              <FormControl className={classes.formControl} fullWidth>
+                <InputLabel shrink htmlFor="SourceAdditionalConfigs">
+                  Additional Configs
+                </InputLabel>
+                <Input
+                  id="SourceAdditionalConfigs"
+                  name="additionalConfigs"
+                  label="Additional Configs"
+                  placeholder={'sitePath:"/sites/shared-resources";driveName:"EquDevCirculars";'}
+                  fullWidth
+                  value={sourcePlatformCfg.additionalConfigs || ""}
+                  onChange={handleSrcConfigChange}
+                />
+              </FormControl>
+
               {/* <pre>{JSON.stringify(sourcePlatformCfg, null, 1)}</pre> */}
             </Grid>
 
@@ -767,6 +784,20 @@ const StringifyConfig = o => {
                       </IconButton>
                     </InputAdornment>
                   }
+                />
+              </FormControl>
+              <FormControl className={classes.formControl} fullWidth>
+                <InputLabel shrink htmlFor="DestinationAdditionalConfigs">
+                  Additional Configs
+                </InputLabel>
+                <Input
+                  id="DestinationAdditionalConfigs"
+                  name="additionalConfigs"
+                  label="Additional Configs"
+                  placeholder={'sitePath:"/sites/shared-resources";driveName:"EquDevCirculars";'}
+                  fullWidth
+                  value={destinationPlatformCfg.additionalConfigs || ""}
+                  onChange={handleDestinationConfigChange}
                 />
               </FormControl>
               {/* {JSON.stringify(destinationPlatform, null, 1)} */}
