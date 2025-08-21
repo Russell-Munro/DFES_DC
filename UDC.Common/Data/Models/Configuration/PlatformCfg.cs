@@ -12,5 +12,7 @@ namespace UDC.Common.Data.Models.Configuration
         public String ServiceDomain { get; set; }
 
         public String PlatformId { get; set; }
+
+        public String AdditionalConfigs { get; set; }
     }
 }
