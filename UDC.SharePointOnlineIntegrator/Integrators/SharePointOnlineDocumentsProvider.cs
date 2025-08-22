@@ -65,10 +65,12 @@ namespace UDC.SharePointOnlineIntegrator.Integrators
         public List<SyncContainer> GetContainers()
         {
             List<SyncContainer> arrContainers = null;
+            PlatformIO objPlatformIO = null;
 
             if (_graphService != null)
             {
-                var arrSrcLists = AsyncHelper.RunSync(() => _graphService.GetListsAsync());
+                objPlatformIO = new PlatformIO(_graphService);
+                var arrSrcLists = objPlatformIO.GetLists();
                 if (arrSrcLists != null)
                 {
                     arrContainers = new List<SyncContainer>();
@@ -81,16 +83,19 @@ namespace UDC.SharePointOnlineIntegrator.Integrators
                 }
             }
 
+            objPlatformIO = null;
             return arrContainers;
         }
         public SyncContainer GetContainerTree(String rootContainerId)
         {
             SyncContainer objRootContainer = null;
+            PlatformIO objPlatformIO = null;
 
             if (_graphService != null)
             {
+                objPlatformIO = new PlatformIO(_graphService);
                 Guid listGuid = GeneralHelpers.parseGUID(rootContainerId);
-                Dictionary<String, Object> objSrcList = AsyncHelper.RunSync(() => _graphService.GetListAsync(listGuid));
+                Dictionary<String, Object> objSrcList = objPlatformIO.GetListTreeStructure(listGuid);
 
                 if (objSrcList != null)
                 {
@@ -102,6 +107,7 @@ namespace UDC.SharePointOnlineIntegrator.Integrators
                 }
             }
 
+            objPlatformIO = null;
             return objRootContainer;
         }
         private List<SyncContainer> GetSubContainers(Dictionary<String, Object> parent)
@@ -168,11 +174,13 @@ namespace UDC.SharePointOnlineIntegrator.Integrators
         public List<SyncField> GetFields(String rootContainerId)
         {
             List<SyncField> arrRetVal = null;
+            PlatformIO objPlatformIO = null;
 
             if (_graphService != null)
             {
+                objPlatformIO = new PlatformIO(_graphService);
                 Guid listGuid = GeneralHelpers.parseGUID(rootContainerId);
-                Dictionary<String, Object> objSrcList = AsyncHelper.RunSync(() => _graphService.GetListAsync(listGuid));
+                Dictionary<String, Object> objSrcList = objPlatformIO.GetList(listGuid);
 
                 if (objSrcList != null && objSrcList.ContainsKey("Fields") && objSrcList["Fields"] != null)
                 {
@@ -192,15 +200,18 @@ namespace UDC.SharePointOnlineIntegrator.Integrators
                 }
             }
 
+            objPlatformIO = null;
             return arrRetVal;
         }
 
         public List<SyncObject> GetObjects(String containerId, List<SyncField> fields, Boolean includeBinary = false)
         {
             List<SyncObject> arrRetVal = null;
+            PlatformIO objPlatformIO = null;
 
             if (_graphService != null)
             {
+                objPlatformIO = new PlatformIO(_graphService);
                 Guid listGuid = GeneralHelpers.parseGUID(containerId);
                 List<String> arrRequiredFields = null;
 
@@ -209,7 +220,7 @@ namespace UDC.SharePointOnlineIntegrator.Integrators
                     arrRequiredFields = fields.Select(obj => obj.Key).ToList();
                 }
 
-                var arrSrcFiles = AsyncHelper.RunSync(() => _graphService.GetDocumentsAsync(listGuid, arrRequiredFields));
+                var arrSrcFiles = objPlatformIO.GetDocuments(listGuid, includeBinary, arrRequiredFields);
                 if (arrSrcFiles != null)
                 {
                     arrRetVal = new List<SyncObject>();
@@ -223,14 +234,17 @@ namespace UDC.SharePointOnlineIntegrator.Integrators
                 }
             }
 
+            objPlatformIO = null;
             return arrRetVal;
         }
         public List<SyncObject> GetObjects(List<String> docIds, List<SyncField> fields, Boolean includeBinary = false)
         {
             List<SyncObject> arrRetVal = null;
+            PlatformIO objPlatformIO = null;
 
             if (_graphService != null)
             {
+                objPlatformIO = new PlatformIO(_graphService);
                 List<String> arrRequiredFields = null;
 
                 if (fields != null)
@@ -238,24 +252,21 @@ namespace UDC.SharePointOnlineIntegrator.Integrators
                     arrRequiredFields = fields.Select(obj => obj.Key).ToList();
                 }
 
-                var arrSrcFiles = AsyncHelper.RunSync(() => _graphService.GetDocumentsAsync(Guid.Empty, arrRequiredFields));
+                var arrSrcFiles = objPlatformIO.GetDocuments(docIds, includeBinary, arrRequiredFields);
                 if (arrSrcFiles != null)
                 {
                     arrRetVal = new List<SyncObject>();
                     foreach (Dictionary<String, Object> srcFile in arrSrcFiles)
                     {
-                        String id = GeneralHelpers.parseString(srcFile["Id"]);
-                        if (docIds == null || docIds.Contains(id))
-                        {
-                            SyncObject objDestFile = new SyncObject();
-                            TypeConverters.ConvertSyncObject(srcFile, ref objDestFile, arrRequiredFields);
+                        SyncObject objDestFile = new SyncObject();
+                        TypeConverters.ConvertSyncObject(srcFile, ref objDestFile, arrRequiredFields);
 
-                            arrRetVal.Add(objDestFile);
-                        }
+                        arrRetVal.Add(objDestFile);
                     }
                 }
             }
 
+            objPlatformIO = null;
             return arrRetVal;
         }
         public SyncObject GetObject(String id, List<SyncField> fields, Boolean includeBinary = false)
@@ -282,10 +293,12 @@ namespace UDC.SharePointOnlineIntegrator.Integrators
         public List<SyncTag> GetMetaTagsList()
         {
             List<SyncTag> arrRetVal = null;
+            PlatformIO objPlatformIO = null;
 
             if (_graphService != null)
             {
-                var arrSrcTermSets = AsyncHelper.RunSync(() => _graphService.GetTermSetsAsync());
+                objPlatformIO = new PlatformIO(_graphService);
+                var arrSrcTermSets = objPlatformIO.GetTermSets(false);
                 if (arrSrcTermSets != null)
                 {
                     arrRetVal = new List<SyncTag>();
@@ -298,38 +311,29 @@ namespace UDC.SharePointOnlineIntegrator.Integrators
                 }
             }
 
+            objPlatformIO = null;
             return arrRetVal;
         }
         public SyncTag GetMetaTagTree(String id)
         {
             SyncTag objRetVal = null;
+            PlatformIO objPlatformIO = null;
 
             if (_graphService != null)
             {
+                objPlatformIO = new PlatformIO(_graphService);
                 Guid termSetGuid = GeneralHelpers.parseGUID(id);
-                var arrTermSets = AsyncHelper.RunSync(() => _graphService.GetTermSetsAsync());
-                Dictionary<String, Object> objSrcTermSet = arrTermSets?.FirstOrDefault(ts => GeneralHelpers.parseString(ts["Id"]) == id);
+                Dictionary<String, Object> objSrcTermSet = objPlatformIO.GetTermSet(termSetGuid, true);
 
                 if (objSrcTermSet != null)
                 {
                     objRetVal = new SyncTag();
                     ConvertSyncTag(objSrcTermSet, ref objRetVal);
-
-                    var arrTerms = AsyncHelper.RunSync(() => _graphService.GetTermsAsync(termSetGuid));
-                    if (arrTerms != null)
-                    {
-                        objRetVal.SyncTags = new List<SyncTag>();
-                        foreach (Dictionary<String, Object> srcTerm in arrTerms)
-                        {
-                            SyncTag objDestTag = new SyncTag();
-                            ConvertSyncTag(srcTerm, ref objDestTag);
-                            objDestTag.SyncTags = GetChildMetaTags(srcTerm);
-                            objRetVal.SyncTags.Add(objDestTag);
-                        }
-                    }
+                    objRetVal.SyncTags = GetChildMetaTags(objSrcTermSet);
                 }
             }
 
+            objPlatformIO = null;
             return objRetVal;
         }
         private List<SyncTag> GetChildMetaTags(Dictionary<String, Object> parent)
