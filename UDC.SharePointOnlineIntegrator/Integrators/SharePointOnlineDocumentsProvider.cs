@@ -6,14 +6,11 @@ using UDC.Common.Data.Models;
 using UDC.Common.Data.Models.Configuration;
 using UDC.Common.Interfaces;
 using UDC.SharePointOnlineIntegrator.Data;
-using Equ.SharePoint.GraphService;
 
 namespace UDC.SharePointOnlineIntegrator.Integrators
 {
     public class SharePointOnlineDocumentsProvider : IIntegrator
     {
-        private readonly IGraphService _graphService;
-
         public SharePointOnlineDocumentsProvider()
         {
             Init();
@@ -21,19 +18,6 @@ namespace UDC.SharePointOnlineIntegrator.Integrators
 
         public SharePointOnlineDocumentsProvider(PlatformCfg cfg)
         {
-            Init();
-            this.PlatformConfig = cfg;
-        }
-
-        public SharePointOnlineDocumentsProvider(IGraphService graphService)
-        {
-            _graphService = graphService;
-            Init();
-        }
-
-        public SharePointOnlineDocumentsProvider(PlatformCfg cfg, IGraphService graphService)
-        {
-            _graphService = graphService;
             Init();
             this.PlatformConfig = cfg;
         }
@@ -64,43 +48,45 @@ namespace UDC.SharePointOnlineIntegrator.Integrators
 
         public List<SyncContainer> GetContainers()
         {
+            PlatformIO objPlatformIO = new PlatformIO(this.PlatformConfig);
             List<SyncContainer> arrContainers = null;
+            List<Dictionary<String, Object>> arrSrcLists = objPlatformIO.GetLists();
 
-            if (_graphService != null)
+            if (arrSrcLists != null && arrSrcLists.Count > 0)
             {
-                var arrSrcLists = AsyncHelper.RunSync(() => _graphService.GetListsAsync());
-                if (arrSrcLists != null)
+                arrContainers = new List<SyncContainer>();
+                foreach (Dictionary<String, Object> srcList in arrSrcLists)
                 {
-                    arrContainers = new List<SyncContainer>();
-                    foreach (Dictionary<String, Object> srcList in arrSrcLists)
-                    {
-                        SyncContainer objDestContainer = new SyncContainer();
-                        TypeConverters.ConvertSyncContainer(srcList, ref objDestContainer);
-                        arrContainers.Add(objDestContainer);
-                    }
+                    SyncContainer objDestContainer = new SyncContainer();
+                    TypeConverters.ConvertSyncContainer(srcList, ref objDestContainer);
+                    arrContainers.Add(objDestContainer);
                 }
             }
+
+            arrSrcLists = null;
+            objPlatformIO = null;
 
             return arrContainers;
         }
+
         public SyncContainer GetContainerTree(String rootContainerId)
         {
+            PlatformIO objPlatformIO = new PlatformIO(this.PlatformConfig);
             SyncContainer objRootContainer = null;
+            Guid listGuid = GeneralHelpers.parseGUID(rootContainerId);
+            Dictionary<String, Object> objSrcList = objPlatformIO.GetList(listGuid);
 
-            if (_graphService != null)
+            if (objSrcList != null)
             {
-                Guid listGuid = GeneralHelpers.parseGUID(rootContainerId);
-                Dictionary<String, Object> objSrcList = AsyncHelper.RunSync(() => _graphService.GetListAsync(listGuid));
+                objRootContainer = new SyncContainer();
+                TypeConverters.ConvertSyncContainer(objSrcList, ref objRootContainer);
 
-                if (objSrcList != null)
-                {
-                    objRootContainer = new SyncContainer();
-                    TypeConverters.ConvertSyncContainer(objSrcList, ref objRootContainer);
-
-                    objRootContainer.SyncContainers = GetSubContainers(objSrcList);
-                    objRootContainer.SyncObjects = GetContainerObjects(objSrcList);
-                }
+                objRootContainer.SyncContainers = GetSubContainers(objSrcList);
+                objRootContainer.SyncObjects = GetContainerObjects(objSrcList);
             }
+
+            objSrcList = null;
+            objPlatformIO = null;
 
             return objRootContainer;
         }
@@ -167,106 +153,118 @@ namespace UDC.SharePointOnlineIntegrator.Integrators
 
         public List<SyncField> GetFields(String rootContainerId)
         {
+            PlatformIO objPlatformIO = new PlatformIO(this.PlatformConfig);
             List<SyncField> arrRetVal = null;
+            Guid listGuid = GeneralHelpers.parseGUID(rootContainerId);
+            Dictionary<String, Object> objSrcList = objPlatformIO.GetList(listGuid);
 
-            if (_graphService != null)
+            if (objSrcList != null && objSrcList.ContainsKey("Fields") && objSrcList["Fields"] != null)
             {
-                Guid listGuid = GeneralHelpers.parseGUID(rootContainerId);
-                Dictionary<String, Object> objSrcList = AsyncHelper.RunSync(() => _graphService.GetListAsync(listGuid));
+                List<Dictionary<String, Object>> arrFields = (List<Dictionary<String, Object>>)objSrcList["Fields"];
 
-                if (objSrcList != null && objSrcList.ContainsKey("Fields") && objSrcList["Fields"] != null)
+                if (arrFields != null && arrFields.Count > 0)
                 {
-                    List<Dictionary<String, Object>> arrFields = (List<Dictionary<String, Object>>)objSrcList["Fields"];
-
-                    if (arrFields != null && arrFields.Count > 0)
+                    arrRetVal = new List<SyncField>();
+                    foreach (Dictionary<String, Object> srcField in arrFields)
                     {
-                        arrRetVal = new List<SyncField>();
-                        foreach (Dictionary<String, Object> srcField in arrFields)
-                        {
-                            SyncField objDestField = new SyncField();
-                            TypeConverters.ConvertSyncField(srcField, ref objDestField);
+                        SyncField objDestField = new SyncField();
+                        TypeConverters.ConvertSyncField(srcField, ref objDestField);
 
-                            arrRetVal.Add(objDestField);
-                        }
+                        arrRetVal.Add(objDestField);
                     }
                 }
             }
+
+            objSrcList = null;
+            objPlatformIO = null;
 
             return arrRetVal;
         }
 
         public List<SyncObject> GetObjects(String containerId, List<SyncField> fields, Boolean includeBinary = false)
         {
+            PlatformIO objPlatformIO = new PlatformIO(this.PlatformConfig);
             List<SyncObject> arrRetVal = null;
+            Guid listGuid = GeneralHelpers.parseGUID(containerId);
+            List<String> arrRequiredFields = null;
 
-            if (_graphService != null)
+            if (fields != null)
             {
-                Guid listGuid = GeneralHelpers.parseGUID(containerId);
-                List<String> arrRequiredFields = null;
+                arrRequiredFields = fields.Select(obj => obj.Key).ToList();
+            }
 
-                if (fields != null)
+            List<Dictionary<String, Object>> arrSrcFiles = objPlatformIO.GetDocuments(listGuid, includeBinary, arrRequiredFields);
+            if (arrSrcFiles != null)
+            {
+                arrRetVal = new List<SyncObject>();
+                foreach (Dictionary<String, Object> srcFile in arrSrcFiles)
                 {
-                    arrRequiredFields = fields.Select(obj => obj.Key).ToList();
-                }
+                    SyncObject objDestFile = new SyncObject();
+                    TypeConverters.ConvertSyncObject(srcFile, ref objDestFile, arrRequiredFields);
 
-                var arrSrcFiles = AsyncHelper.RunSync(() => _graphService.GetDocumentsAsync(listGuid, arrRequiredFields));
-                if (arrSrcFiles != null)
-                {
-                    arrRetVal = new List<SyncObject>();
-                    foreach (Dictionary<String, Object> srcFile in arrSrcFiles)
-                    {
-                        SyncObject objDestFile = new SyncObject();
-                        TypeConverters.ConvertSyncObject(srcFile, ref objDestFile, arrRequiredFields);
-
-                        arrRetVal.Add(objDestFile);
-                    }
+                    arrRetVal.Add(objDestFile);
                 }
             }
 
+            arrRequiredFields = null;
+            arrSrcFiles = null;
+            objPlatformIO = null;
+
             return arrRetVal;
         }
+
         public List<SyncObject> GetObjects(List<String> docIds, List<SyncField> fields, Boolean includeBinary = false)
         {
+            PlatformIO objPlatformIO = new PlatformIO(this.PlatformConfig);
             List<SyncObject> arrRetVal = null;
+            List<String> arrRequiredFields = null;
 
-            if (_graphService != null)
+            if (fields != null)
             {
-                List<String> arrRequiredFields = null;
+                arrRequiredFields = fields.Select(obj => obj.Key).ToList();
+            }
 
-                if (fields != null)
+            List<Dictionary<String, Object>> arrSrcFiles = objPlatformIO.GetDocuments(docIds, includeBinary, arrRequiredFields);
+            if (arrSrcFiles != null)
+            {
+                arrRetVal = new List<SyncObject>();
+                foreach (Dictionary<String, Object> srcFile in arrSrcFiles)
                 {
-                    arrRequiredFields = fields.Select(obj => obj.Key).ToList();
-                }
+                    SyncObject objDestFile = new SyncObject();
+                    TypeConverters.ConvertSyncObject(srcFile, ref objDestFile, arrRequiredFields);
 
-                var arrSrcFiles = AsyncHelper.RunSync(() => _graphService.GetDocumentsAsync(Guid.Empty, arrRequiredFields));
-                if (arrSrcFiles != null)
-                {
-                    arrRetVal = new List<SyncObject>();
-                    foreach (Dictionary<String, Object> srcFile in arrSrcFiles)
-                    {
-                        String id = GeneralHelpers.parseString(srcFile["Id"]);
-                        if (docIds == null || docIds.Contains(id))
-                        {
-                            SyncObject objDestFile = new SyncObject();
-                            TypeConverters.ConvertSyncObject(srcFile, ref objDestFile, arrRequiredFields);
-
-                            arrRetVal.Add(objDestFile);
-                        }
-                    }
+                    arrRetVal.Add(objDestFile);
                 }
             }
+
+            arrRequiredFields = null;
+            arrSrcFiles = null;
+            objPlatformIO = null;
 
             return arrRetVal;
         }
+
         public SyncObject GetObject(String id, List<SyncField> fields, Boolean includeBinary = false)
         {
+            PlatformIO objPlatformIO = new PlatformIO(this.PlatformConfig);
             SyncObject objRetVal = null;
+            List<String> arrRequiredFields = null;
 
-            List<SyncObject> arrFiles = GetObjects(new List<String>() { id }, fields, includeBinary);
-            if (arrFiles != null && arrFiles.Count > 0)
+            if (fields != null)
             {
-                objRetVal = arrFiles[0];
+                arrRequiredFields = fields.Select(obj => obj.Key).ToList();
             }
+
+            Dictionary<String, Object> objSrcFile = objPlatformIO.GetDocument(id, includeBinary, arrRequiredFields);
+            if (objSrcFile != null)
+            {
+                objRetVal = new SyncObject();
+                TypeConverters.ConvertSyncObject(objSrcFile, ref objRetVal, arrRequiredFields);
+            }
+
+            arrRequiredFields = null;
+            objSrcFile = null;
+            objPlatformIO = null;
 
             return objRetVal;
         }
@@ -281,54 +279,47 @@ namespace UDC.SharePointOnlineIntegrator.Integrators
 
         public List<SyncTag> GetMetaTagsList()
         {
+            PlatformIO objPlatformIO = new PlatformIO(this.PlatformConfig);
             List<SyncTag> arrRetVal = null;
+            List<Dictionary<String, Object>> arrSrcTermSets = objPlatformIO.GetTermSets(false);
 
-            if (_graphService != null)
+            if (arrSrcTermSets != null && arrSrcTermSets.Count > 0)
             {
-                var arrSrcTermSets = AsyncHelper.RunSync(() => _graphService.GetTermSetsAsync());
-                if (arrSrcTermSets != null)
+                arrRetVal = new List<SyncTag>();
+                foreach (Dictionary<String, Object> srcTag in arrSrcTermSets)
                 {
-                    arrRetVal = new List<SyncTag>();
-                    foreach (Dictionary<String, Object> srcTag in arrSrcTermSets)
-                    {
-                        SyncTag objDestTag = new SyncTag();
-                        ConvertSyncTag(srcTag, ref objDestTag);
-                        arrRetVal.Add(objDestTag);
-                    }
+                    SyncTag objDestTag = new SyncTag();
+                    ConvertSyncTag(srcTag, ref objDestTag);
+                    arrRetVal.Add(objDestTag);
                 }
             }
 
+            arrSrcTermSets = null;
+            objPlatformIO = null;
+
             return arrRetVal;
         }
+
         public SyncTag GetMetaTagTree(String id)
         {
+            PlatformIO objPlatformIO = new PlatformIO(this.PlatformConfig);
             SyncTag objRetVal = null;
+            Dictionary<String, Object> objSrcTermSet = null;
+            Guid termSetGuid = GeneralHelpers.parseGUID(id);
 
-            if (_graphService != null)
+            if (termSetGuid != Guid.Empty)
             {
-                Guid termSetGuid = GeneralHelpers.parseGUID(id);
-                var arrTermSets = AsyncHelper.RunSync(() => _graphService.GetTermSetsAsync());
-                Dictionary<String, Object> objSrcTermSet = arrTermSets?.FirstOrDefault(ts => GeneralHelpers.parseString(ts["Id"]) == id);
-
+                objSrcTermSet = objPlatformIO.GetTermSet(termSetGuid, true);
                 if (objSrcTermSet != null)
                 {
                     objRetVal = new SyncTag();
                     ConvertSyncTag(objSrcTermSet, ref objRetVal);
-
-                    var arrTerms = AsyncHelper.RunSync(() => _graphService.GetTermsAsync(termSetGuid));
-                    if (arrTerms != null)
-                    {
-                        objRetVal.SyncTags = new List<SyncTag>();
-                        foreach (Dictionary<String, Object> srcTerm in arrTerms)
-                        {
-                            SyncTag objDestTag = new SyncTag();
-                            ConvertSyncTag(srcTerm, ref objDestTag);
-                            objDestTag.SyncTags = GetChildMetaTags(srcTerm);
-                            objRetVal.SyncTags.Add(objDestTag);
-                        }
-                    }
+                    objRetVal.SyncTags = GetChildMetaTags(objSrcTermSet);
                 }
             }
+
+            objSrcTermSet = null;
+            objPlatformIO = null;
 
             return objRetVal;
         }
