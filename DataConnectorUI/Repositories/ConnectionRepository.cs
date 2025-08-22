@@ -151,17 +151,17 @@ namespace DataConnectorUI.Repositories
 
         public IOrderedEnumerable<SyncField> GetSourceFields(Int64 connectionId, string containerId)
         {
-            IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionId, ProviderHelpers.Targets.Source);
+            IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionId, ProviderHelpers.Targets.Source, _myDbContext);
             return objTargetIntegrator?.GetFields(containerId).OrderBy(field => !string.IsNullOrEmpty(field.Title) ? field.Title : field.Key);
         }
         public IOrderedEnumerable<SyncField> GetDestinationFields(Int64 connectionId, string containerId)
         {
-            IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionId, ProviderHelpers.Targets.Destination);
+            IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionId, ProviderHelpers.Targets.Destination, _myDbContext);
             return objTargetIntegrator?.GetFields(containerId).OrderBy(field => !string.IsNullOrEmpty(field.Title) ? field.Title : field.Key);
         }
         public List<SyncContainer> GetSourceContainers(int connectionId)
         {
-            IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionId, ProviderHelpers.Targets.Source);
+            IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionId, ProviderHelpers.Targets.Source, _myDbContext);
             return objTargetIntegrator?.GetContainers();
         }
 
@@ -169,7 +169,7 @@ namespace DataConnectorUI.Repositories
         {
             if (!string.IsNullOrEmpty(containerId))
             {
-                IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionId, ProviderHelpers.Targets.Source);
+                IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionId, ProviderHelpers.Targets.Source, _myDbContext);
                 var q = objTargetIntegrator?.GetContainers();
 
                 return objTargetIntegrator?.GetContainers().FirstOrDefault(x => x.Id.ToString() == containerId);
@@ -180,7 +180,7 @@ namespace DataConnectorUI.Repositories
 
         public List<SyncContainer> GetDestinationContainers(int connectionId)
         {
-            IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionId, ProviderHelpers.Targets.Destination);
+            IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionId, ProviderHelpers.Targets.Destination, _myDbContext);
             return objTargetIntegrator?.GetContainers();
         }
 
@@ -188,7 +188,7 @@ namespace DataConnectorUI.Repositories
         {
             if (!string.IsNullOrEmpty(containerId))
             {
-                IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionId, ProviderHelpers.Targets.Destination);
+                IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionId, ProviderHelpers.Targets.Destination, _myDbContext);
                 var q = objTargetIntegrator?.GetContainers();
                 return objTargetIntegrator?.GetContainers().FirstOrDefault(x => x.Id.ToString() == containerId);
             }

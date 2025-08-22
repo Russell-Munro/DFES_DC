@@ -12,7 +12,6 @@ using UDC.Common.Data.Models.Configuration;
 using UDC.Common.Data;
 using UDC.Common.Database.Data.Models.Database;
 using UDC.Common.Database.Data;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace UDC.DataConnectorCore
 {
@@ -86,13 +85,11 @@ namespace UDC.DataConnectorCore
 
             return retVal;
         }
-        public static IIntegrator GetIntegrator(Int64 connectionID, Targets target)
+        public static IIntegrator GetIntegrator(Int64 connectionID, Targets target, DatabaseContext databaseContext)
         {
             IIntegrator objIntegrator = null;
 
-            var objDB = ServiceLocator.Instance.GetRequiredService<DatabaseContext>();
-
-            Connection objEntity = objDB.Connections.Where(obj => obj.Id == connectionID).FirstOrDefault();
+            Connection objEntity = databaseContext.Connections.Where(obj => obj.Id == connectionID).FirstOrDefault();
                 if (objEntity != null)
                 {
                     PlatformCfg objPlatformCfg = null;
@@ -116,7 +113,6 @@ namespace UDC.DataConnectorCore
                     objPlatformCfg = null;
                 }
                 objEntity = null;
-            
 
             return objIntegrator;
         }
