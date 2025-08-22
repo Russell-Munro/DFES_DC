@@ -24,6 +24,7 @@ namespace UDC.SharePointOnlineIntegrator.Data
             LoadSettings();
             EnsureAdditionalConfigsValid();
         }
+
         public PlatformIO(String endPointURL, String serviceUsername, String servicePassword, String additionalConfigs)
         {
             this.EndPointURL = endPointURL;
@@ -32,6 +33,7 @@ namespace UDC.SharePointOnlineIntegrator.Data
             this.AdditionalConfigs = GeneralHelpers.ParseAdditionalConfigs(additionalConfigs);
             EnsureAdditionalConfigsValid();
         }
+
         public PlatformIO(PlatformCfg cfg, String additionalConfigs = null)
         {
             if (cfg != null)
@@ -41,13 +43,19 @@ namespace UDC.SharePointOnlineIntegrator.Data
                 this.ServicePassword = cfg.ServicePassword;
                 this.AdditionalConfigs = GeneralHelpers.ParseAdditionalConfigs(additionalConfigs ?? cfg.AdditionalConfigs);
                 EnsureAdditionalConfigsValid();
-        }
+            }
             else
-        {
+            {
                 this.AdditionalConfigs = new Dictionary<String, String>();
                 LoadSettings();
                 EnsureAdditionalConfigsValid();
+            }
         }
+
+        public PlatformIO(PlatformCfg cfg, IGraphService graphService, String additionalConfigs = null)
+            : this(cfg, additionalConfigs)
+        {
+            this._graphService = graphService;
         }
 
         private void EnsureAdditionalConfigsValid()
@@ -58,7 +66,7 @@ namespace UDC.SharePointOnlineIntegrator.Data
                 !this.AdditionalConfigs.ContainsKey("driveName"))
             {
                 throw new Exception("Additional configs must contain tenantId, sitePath and driveName.");
-        }
+            }
         }
 
         private void LoadSettings()
@@ -120,17 +128,18 @@ namespace UDC.SharePointOnlineIntegrator.Data
 
             var arrSrcLists = AsyncHelper.RunSync(() => graphService.GetListsAsync());
             if (arrSrcLists != null)
-        {
+            {
                 arrRetVal = arrSrcLists.ToList();
             }
 
             return arrRetVal;
         }
+
         public Dictionary<String, Object> GetList(Guid listId)
-            {
+        {
             IGraphService graphService = GetGraphService();
             return AsyncHelper.RunSync(() => graphService.GetListAsync(listId));
-            }
+        }
         public List<Dictionary<String, Object>> GetDocuments(Guid listId, Boolean includeBinary, List<String> fields)
         {
             List<Dictionary<String, Object>> arrRetVal = null;
@@ -140,10 +149,11 @@ namespace UDC.SharePointOnlineIntegrator.Data
             if (arrSrcFiles != null)
             {
                 arrRetVal = arrSrcFiles.ToList();
-        }
+            }
 
             return arrRetVal;
         }
+
         public List<Dictionary<String, Object>> GetDocuments(List<String> docIds, Boolean includeBinary, List<String> fields)
         {
             List<Dictionary<String, Object>> arrRetVal = null;
@@ -159,7 +169,7 @@ namespace UDC.SharePointOnlineIntegrator.Data
             }
 
             return arrRetVal;
-                }
+        }
         public Dictionary<String, Object> GetDocument(String docId, Boolean includeBinary, List<String> fields)
         {
             List<Dictionary<String, Object>> arrDocs = GetDocuments(new List<String>() { docId }, includeBinary, fields);
@@ -182,20 +192,21 @@ namespace UDC.SharePointOnlineIntegrator.Data
 
             return arrRetVal;
         }
-        //public Dictionary<String, Object> GetTermSet(Guid id, Boolean includeChildren)
-        //{
-        //    IGraphService graphService = GetGraphService();
-        //    var arrTermSets = AsyncHelper.RunSync(() => graphService.GetTermSetsAsync());
-        //    Dictionary<String, Object> objRetVal = arrTermSets?.FirstOrDefault(ts => GeneralHelpers.parseGUID(ts["Id"]) == id);
 
-        //    if (objRetVal != null && includeChildren)
-        //    {
-        //        var arrTerms = AsyncHelper.RunSync(() => graphService.GetTermsAsync(id));
-        //        objRetVal["Terms"] = arrTerms?.ToList();
-        //    }
+        public Dictionary<String, Object> GetTermSet(Guid id, Boolean includeChildren)
+        {
+            IGraphService graphService = GetGraphService();
+            var arrTermSets = AsyncHelper.RunSync(() => graphService.GetTermSetsAsync());
+            Dictionary<String, Object> objRetVal = arrTermSets?.FirstOrDefault(ts => GeneralHelpers.parseGUID(ts["Id"]) == id);
 
-        //    return objRetVal;
-        //}
+            if (objRetVal != null && includeChildren)
+            {
+                var arrTerms = AsyncHelper.RunSync(() => graphService.GetTermsAsync(id));
+                objRetVal["Terms"] = arrTerms?.ToList();
+            }
+
+            return objRetVal;
+        }
     }
 }
 
