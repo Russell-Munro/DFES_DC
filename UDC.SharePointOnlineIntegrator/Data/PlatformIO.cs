@@ -182,20 +182,20 @@ namespace UDC.SharePointOnlineIntegrator.Data
 
             return arrRetVal;
         }
-        public Dictionary<String, Object> GetTermSet(Guid id, Boolean includeChildren)
-        {
-            IGraphService graphService = GetGraphService();
-            var arrTermSets = AsyncHelper.RunSync(() => graphService.GetTermSetsAsync());
-            Dictionary<String, Object> objRetVal = arrTermSets?.FirstOrDefault(ts => GeneralHelpers.parseGUID(ts["Id"]) == id);
+        //public Dictionary<String, Object> GetTermSet(Guid id, Boolean includeChildren)
+        //{
+        //    IGraphService graphService = GetGraphService();
+        //    var arrTermSets = AsyncHelper.RunSync(() => graphService.GetTermSetsAsync());
+        //    Dictionary<String, Object> objRetVal = arrTermSets?.FirstOrDefault(ts => GeneralHelpers.parseGUID(ts["Id"]) == id);
 
-            if (objRetVal != null && includeChildren)
-            {
-                var arrTerms = AsyncHelper.RunSync(() => graphService.GetTermsAsync(id));
-                objRetVal["Terms"] = arrTerms?.ToList();
-            }
+        //    if (objRetVal != null && includeChildren)
+        //    {
+        //        var arrTerms = AsyncHelper.RunSync(() => graphService.GetTermsAsync(id));
+        //        objRetVal["Terms"] = arrTerms?.ToList();
+        //    }
 
-            return objRetVal;
-        }
+        //    return objRetVal;
+        //}
     }
 }
 
