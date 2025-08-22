@@ -41,13 +41,13 @@ namespace UDC.SharePointOnlineIntegrator.Data
                 this.ServicePassword = cfg.ServicePassword;
                 this.AdditionalConfigs = GeneralHelpers.ParseAdditionalConfigs(additionalConfigs ?? cfg.AdditionalConfigs);
                 EnsureAdditionalConfigsValid();
-            }
+        }
             else
-            {
+        {
                 this.AdditionalConfigs = new Dictionary<String, String>();
                 LoadSettings();
                 EnsureAdditionalConfigsValid();
-            }
+        }
         }
 
         private void EnsureAdditionalConfigsValid()
@@ -58,7 +58,7 @@ namespace UDC.SharePointOnlineIntegrator.Data
                 !this.AdditionalConfigs.ContainsKey("driveName"))
             {
                 throw new Exception("Additional configs must contain tenantId, sitePath and driveName.");
-            }
+        }
         }
 
         private void LoadSettings()
@@ -120,17 +120,17 @@ namespace UDC.SharePointOnlineIntegrator.Data
 
             var arrSrcLists = AsyncHelper.RunSync(() => graphService.GetListsAsync());
             if (arrSrcLists != null)
-            {
+        {
                 arrRetVal = arrSrcLists.ToList();
             }
 
             return arrRetVal;
         }
         public Dictionary<String, Object> GetList(Guid listId)
-        {
+            {
             IGraphService graphService = GetGraphService();
             return AsyncHelper.RunSync(() => graphService.GetListAsync(listId));
-        }
+            }
         public List<Dictionary<String, Object>> GetDocuments(Guid listId, Boolean includeBinary, List<String> fields)
         {
             List<Dictionary<String, Object>> arrRetVal = null;
@@ -140,7 +140,7 @@ namespace UDC.SharePointOnlineIntegrator.Data
             if (arrSrcFiles != null)
             {
                 arrRetVal = arrSrcFiles.ToList();
-            }
+        }
 
             return arrRetVal;
         }
@@ -159,7 +159,7 @@ namespace UDC.SharePointOnlineIntegrator.Data
             }
 
             return arrRetVal;
-        }
+                }
         public Dictionary<String, Object> GetDocument(String docId, Boolean includeBinary, List<String> fields)
         {
             List<Dictionary<String, Object>> arrDocs = GetDocuments(new List<String>() { docId }, includeBinary, fields);
