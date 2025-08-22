@@ -89,7 +89,7 @@ const CONNECTIONS = gql`
         serviceUsername
         serviceDomain
         platformID
-
+        additionalConfigs
       }
       jsonDestinationPlatformCfg {
         endPointURL
@@ -98,7 +98,7 @@ const CONNECTIONS = gql`
         serviceUsername
         serviceDomain
         platformID
-
+        additionalConfigs
       }
     }
   }
