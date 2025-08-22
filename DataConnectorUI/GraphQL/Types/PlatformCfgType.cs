@@ -20,6 +20,7 @@ namespace DataConnectorUI.GraphQL.Types
             Field(x => x.ServicePassword, type: typeof(StringGraphType));
             Field(x => x.ServiceUsername, type: typeof(StringGraphType));
             Field(x => x.PlatformID, type: typeof(StringGraphType));
+            Field(x => x.AdditionalConfigs, type: typeof(StringGraphType));
 
         }
     }

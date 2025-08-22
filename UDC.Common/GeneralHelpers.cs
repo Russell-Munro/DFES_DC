@@ -271,6 +271,24 @@ namespace UDC.Common
             }
         }
 
+        public static Dictionary<String, String> ParseAdditionalConfigs(String configs)
+        {
+            Dictionary<String, String> dict = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
+            if (!String.IsNullOrWhiteSpace(configs))
+            {
+                String[] pairs = configs.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (String pair in pairs)
+                {
+                    String[] kv = pair.Split(new char[] { ':' }, 2);
+                    if (kv.Length == 2)
+                    {
+                        dict[kv[0].Trim()] = kv[1].Trim();
+                    }
+                }
+            }
+            return dict;
+        }
+
         public static List<String> toStringList(String SourceString, Char[] delimiter)
         {
             String[] arrParts = SourceString.Split(delimiter);

@@ -16,8 +16,8 @@ var builder = Host.CreateDefaultBuilder(args)
         var configuration = hostContext.Configuration;
 
         // Register your EF Core context (edit for your DB type and connection string name)
-        services.AddDbContext<DatabaseContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+        services.AddDbContextFactory<DatabaseContext>(options =>
+            options.UseSqlServer(configuration.GetConnectionString("DataConnector")));
 
         // Register Quartz.NET with DI
         services.AddQuartz();
