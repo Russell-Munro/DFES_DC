@@ -164,7 +164,7 @@ namespace Equ.SharePoint.GraphService
                     var dict = new Dictionary<string, object>
                     {
                         {"Id", (string)set["id"]},
-                        {"Name", (string)set["localizedNames"]?.First?()["name"]}
+                        {"Name", (string)set["localizedNames"]?.First?["name"]}
                     };
                     results.Add(dict);
                 }
@@ -318,7 +318,7 @@ namespace Equ.SharePoint.GraphService
             var dest = new Dictionary<string, object>
             {
                 {"Id", (string)term["id"]},
-                {"Name", (string)term["labels"]?.First?()["name"]}
+                {"Name", (string)term["labels"]?.First?["name"]}
             };
 
             var parentId = term["parent"]?["id"]?.ToString();

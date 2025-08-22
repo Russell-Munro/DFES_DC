@@ -11,7 +11,7 @@ namespace UDC.SharePointOnlineIntegrator.Data
     // Wrapper / Type Converter helper for SharePoint Online via Microsoft Graph
     public class PlatformIO
     {
-        public String EndPointURL { get; set; }
+        public String Domain { get; set; }
         public String ServiceUsername { get; set; }
         public String ServicePassword { get; set; }
         public Dictionary<String, String> AdditionalConfigs { get; private set; }
@@ -25,23 +25,23 @@ namespace UDC.SharePointOnlineIntegrator.Data
             EnsureAdditionalConfigsValid();
         }
 
-        public PlatformIO(String endPointURL, String serviceUsername, String servicePassword, String additionalConfigs)
+        public PlatformIO(String domain, String serviceUsername, String servicePassword, String additionalConfigs)
         {
-            this.EndPointURL = endPointURL;
+            this.Domain = domain;
             this.ServiceUsername = serviceUsername;
             this.ServicePassword = servicePassword;
             this.AdditionalConfigs = GeneralHelpers.ParseAdditionalConfigs(additionalConfigs);
             EnsureAdditionalConfigsValid();
         }
 
-        public PlatformIO(PlatformCfg cfg, String additionalConfigs = null)
+        public PlatformIO(PlatformCfg cfg)
         {
             if (cfg != null)
             {
-                this.EndPointURL = cfg.EndPointURL;
+                this.Domain = cfg.ServiceDomain;
                 this.ServiceUsername = cfg.ServiceUsername;
                 this.ServicePassword = cfg.ServicePassword;
-                this.AdditionalConfigs = GeneralHelpers.ParseAdditionalConfigs(additionalConfigs ?? cfg.AdditionalConfigs);
+                this.AdditionalConfigs = GeneralHelpers.ParseAdditionalConfigs(cfg.AdditionalConfigs);
                 EnsureAdditionalConfigsValid();
             }
             else
@@ -52,11 +52,6 @@ namespace UDC.SharePointOnlineIntegrator.Data
             }
         }
 
-        public PlatformIO(PlatformCfg cfg, IGraphService graphService, String additionalConfigs = null)
-            : this(cfg, additionalConfigs)
-        {
-            this._graphService = graphService;
-        }
 
         private void EnsureAdditionalConfigsValid()
         {
@@ -71,7 +66,7 @@ namespace UDC.SharePointOnlineIntegrator.Data
 
         private void LoadSettings()
         {
-            this.EndPointURL = AppSettings.GetValue("SharePointOnline:EndPointURL");
+            this.Domain = AppSettings.GetValue("SharePointOnline:EndPointURL");
             this.ServiceUsername = AppSettings.GetValue("SharePointOnline:ServiceUsername");
             this.ServicePassword = AppSettings.GetValue("SharePointOnline:ServicePassword");
             String addCfg = AppSettings.GetValue("SharePointOnline:AdditionalConfigs");
@@ -80,7 +75,7 @@ namespace UDC.SharePointOnlineIntegrator.Data
         private Boolean ValidateSettings()
         {
             Boolean blnRetVal = true;
-            if (String.IsNullOrEmpty(this.EndPointURL))
+            if (String.IsNullOrEmpty(this.Domain))
             {
                 blnRetVal = false;
             }
@@ -115,7 +110,7 @@ namespace UDC.SharePointOnlineIntegrator.Data
                 String sitePath = this.AdditionalConfigs.ContainsKey("sitePath") ? this.AdditionalConfigs["sitePath"] : null;
                 String driveName = this.AdditionalConfigs.ContainsKey("driveName") ? this.AdditionalConfigs["driveName"] : null;
 
-                this._graphService = new GraphService(tenantId, this.ServiceUsername, this.ServicePassword, this.EndPointURL, sitePath, driveName);
+                this._graphService = new GraphService(tenantId, this.ServiceUsername, this.ServicePassword, this.Domain, sitePath, driveName);
             }
 
             return this._graphService;
@@ -197,7 +192,7 @@ namespace UDC.SharePointOnlineIntegrator.Data
         {
             IGraphService graphService = GetGraphService();
             var arrTermSets = AsyncHelper.RunSync(() => graphService.GetTermSetsAsync());
-            Dictionary<String, Object> objRetVal = arrTermSets?.FirstOrDefault(ts => GeneralHelpers.parseGUID(ts["Id"]) == id);
+            Dictionary<String, Object> objRetVal = arrTermSets?.FirstOrDefault(ts => GeneralHelpers.parseGUID(ts["Id"].ToString()) == id);
 
             if (objRetVal != null && includeChildren)
             {
