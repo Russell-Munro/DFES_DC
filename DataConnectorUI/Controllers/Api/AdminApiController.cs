@@ -442,7 +442,7 @@ namespace DataConnectorUI.Controllers.Api
 
             try
             {
-                IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionID, Targets.Source);
+                IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionID, Targets.Source, _databaseContext);
                 if (objTargetIntegrator != null)
                 {
                     objRetVal.data = objTargetIntegrator.GetContainers();
@@ -466,7 +466,7 @@ namespace DataConnectorUI.Controllers.Api
 
             try
             {
-                IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionID, Targets.Destination);
+                IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionID, Targets.Destination, _databaseContext);
                 if (objTargetIntegrator != null)
                 {
                     objRetVal.data = objTargetIntegrator.GetContainers();
@@ -490,7 +490,7 @@ namespace DataConnectorUI.Controllers.Api
 
             try
             {
-                IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionID, Targets.Source);
+                IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionID, Targets.Source, _databaseContext);
                 if (objTargetIntegrator != null)
                 {
                     objRetVal.data = objTargetIntegrator.GetFields(containerId);
@@ -514,7 +514,7 @@ namespace DataConnectorUI.Controllers.Api
 
             try
             {
-                IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionID, Targets.Destination);
+                IIntegrator objTargetIntegrator = ProviderHelpers.GetIntegrator(connectionID, Targets.Destination, _databaseContext);
                 if (objTargetIntegrator != null)
                 {
                     objRetVal.data = objTargetIntegrator.GetFields(containerId);
